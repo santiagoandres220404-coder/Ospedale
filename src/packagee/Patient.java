@@ -48,6 +48,30 @@ public class Patient extends User {
     public ArrayList<Appointment> getAppointments() {
         return appointments;
     }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public LocalDate getBirthdate() {
+        return birthdate;
+    }
+
+    public boolean isGender() {
+        return gender;
+    }
+
+    public long getPhone() {
+        return phone;
+    }
+
+    public String getAddress() {
+        return address;
+    }
+
+    public Hospitalization getHospitalization() {
+        return hospitalization;
+    }
     
     public void addAppointment(Appointment a) {
         this.appointments.add(a);

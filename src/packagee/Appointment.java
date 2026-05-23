@@ -57,10 +57,20 @@ public class Appointment {
         this.type = type;
         this.status = AppointmentStatus.REQUESTED;
         this.prescriptions = new ArrayList<>();
+        patient.addAppointment(this);
+        doctor.addAppointment(this);
     }
 
     public void setStatus(AppointmentStatus status) {
         this.status = status;
+    }
+
+    public void setDatetime(LocalDateTime datetime) {
+        this.datetime = datetime;
+    }
+
+    public void appendReason(String reason) {
+        this.reason = this.reason + " | Reprogramacion: " + reason;
     }
 
     public String getId() {
@@ -93,6 +103,26 @@ public class Appointment {
 
     public boolean addPrescription(Prescription prescrip) {
         return this.prescriptions.add(prescrip);
+    }
+
+    public String getReason() {
+        return reason;
+    }
+
+    public String getDiagnosis() {
+        return diagnosis;
+    }
+
+    public String getObservations() {
+        return observations;
+    }
+
+    public String getRecommendedTreatment() {
+        return recommendedTreatment;
+    }
+
+    public String getFollowUp() {
+        return followUp;
     }
     
 }

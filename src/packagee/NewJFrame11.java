@@ -6,6 +6,7 @@ package packagee;
 
 import java.awt.Color;
 import java.util.ArrayList;
+import javax.swing.JOptionPane;
 
 /**
  *
@@ -25,6 +26,7 @@ public class NewJFrame11 extends javax.swing.JFrame {
         this.users = users;
         this.hospitalizations = hospitalizations;
         this.appointments = appointments;
+        loadUsersInCombos();
         this.setBackground(new Color(0, 0, 0, 0));
         this.setLocationRelativeTo(null);
     }
@@ -424,9 +426,21 @@ public class NewJFrame11 extends javax.swing.JFrame {
         String username = jTextField8.getText();
         String password = jTextField9.getText();
         String comPassword = jTextField10.getText();
-        Specialty specialty = Specialty.valueOf(spec.replaceAll(" &", "").replaceAll(" ", "_"));
-        if (password.equals(comPassword)) {
-            users.add(new Doctor(id, username, firstname, lastname, password, specialty, licenseNumber, assignedOffice));
+        Specialty specialty = HospitalStore.getInstance().parseSpecialty(spec.replaceAll(" &", "").replaceAll(" ", "_").toUpperCase());
+        UserController controller = new UserController();
+        Response response = controller.registerDoctor(id, username, firstname, lastname, password, comPassword,
+                specialty, licenseNumber, assignedOffice);
+        JOptionPane.showMessageDialog(this, response.getMessage());
+        if (response.isSuccess()) {
+            loadUsersInCombos();
+            jTextField3.setText("");
+            jTextField4.setText("");
+            jTextField5.setText("");
+            jTextField6.setText("");
+            jTextField7.setText("");
+            jTextField8.setText("");
+            jTextField9.setText("");
+            jTextField10.setText("");
         }
     }//GEN-LAST:event_jButton9ActionPerformed
 
@@ -435,7 +449,7 @@ public class NewJFrame11 extends javax.swing.JFrame {
         Doctor temp = null;
         for(User use:this.users){
             if(use.getId() == idDoctor)
-                temp =(Doctor) user;
+                temp =(Doctor) use;
         }
         NewJFrame111 doctor = new NewJFrame111(user,temp, users, hospitalizations,appointments);
         this.setVisible(false);
@@ -450,16 +464,30 @@ public class NewJFrame11 extends javax.swing.JFrame {
     }//GEN-LAST:event_jButton10ActionPerformed
 
     private void jButton3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton3ActionPerformed
-        long idPatient = Long.parseLong(jComboBox2.getItemAt(jComboBox2.getSelectedIndex()));
+        long idPatient = Long.parseLong(jComboBox3.getItemAt(jComboBox3.getSelectedIndex()));
         Patient temp = null;
         for(User use:this.users){
             if(use.getId() == idPatient)
-                temp =(Patient) user;
+                temp =(Patient) use;
         }
         NewJFrame1 patient = new NewJFrame1(user,temp,users,appointments,hospitalizations);
         this.setVisible(false);
         patient.setVisible(true);
     }//GEN-LAST:event_jButton3ActionPerformed
+
+    private void loadUsersInCombos() {
+        jComboBox2.removeAllItems();
+        jComboBox3.removeAllItems();
+        jComboBox2.addItem("Select one");
+        jComboBox3.addItem("Select one");
+        for (User current : users) {
+            if (current instanceof Doctor) {
+                jComboBox2.addItem(String.valueOf(current.getId()));
+            } else if (current instanceof Patient) {
+                jComboBox3.addItem(String.valueOf(current.getId()));
+            }
+        }
+    }
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
