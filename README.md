@@ -8,4 +8,4 @@ Integrantes:
 - Jhon Sebastian Afanador Rueda
 - Adrian Jose Martinez Matinez
 
-NRC: pendiente por completar
+NRC: 2039

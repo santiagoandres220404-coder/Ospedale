@@ -5,7 +5,6 @@
 package packagee;
 
 import java.awt.Color;
-import java.util.ArrayList;
 import javax.swing.JOptionPane;
 import javax.swing.table.DefaultTableModel;
 import org.json.JSONArray;
@@ -19,22 +18,17 @@ import org.json.JSONObject;
 public class NewJFrame1 extends javax.swing.JFrame implements StoreObserver {
 
     private int x, y;
-    private User user;
-    private ArrayList<User> users;
-    private Patient patient;
-    private ArrayList<Appointment> appointments;
-    private ArrayList<Hospitalization> hospitalizations;
+    private long userId;
+    private long patientId;
 
     public NewJFrame1(long userId, long patientId) {
         initComponents();
         HospitalStore store = HospitalStore.getInstance();
         store.loadUsersFromJson();
-        this.user = store.findUserById(userId);
-        this.users = store.getUsers();
-        this.patient = store.findPatient(patientId);
-        this.hospitalizations = store.getHospitalizations();
-        this.appointments = store.getAppointments();
-        if (user instanceof Administrator) {
+        this.userId = userId;
+        this.patientId = patientId;
+        JSONObject userData = new JSONObject(new CatalogController().getUser(String.valueOf(userId)).getData());
+        if ("admin".equals(userData.getString("type"))) {
             patientBackButton.setVisible(true);
         } else {
             patientBackButton.setVisible(false);
@@ -46,10 +40,6 @@ public class NewJFrame1 extends javax.swing.JFrame implements StoreObserver {
         store.addObserver(this);
         this.setBackground(new Color(0, 0, 0, 0));
         this.setLocationRelativeTo(null);
-    }
-
-    public NewJFrame1(User user,Patient patient, ArrayList<User> users, ArrayList<Appointment>appointments, ArrayList<Hospitalization> hospitalizations) {
-        this(user.getId(), patient.getId());
     }
 
     /**
@@ -806,7 +796,7 @@ public class NewJFrame1 extends javax.swing.JFrame implements StoreObserver {
         String password = patientPasswordField.getText();
         String comPassword = patientPasswordConfirmationField.getText();
         UserController controller = new UserController();
-        Response response = controller.updatePatient(String.valueOf(patient.getId()), username, firstname, lastname, password,
+        Response response = controller.updatePatient(String.valueOf(patientId), username, firstname, lastname, password,
                 comPassword, email, birth, gender, phone, address);
         JOptionPane.showMessageDialog(this, response.getMessage());
         if (response.isSuccess()) {
@@ -822,7 +812,7 @@ public class NewJFrame1 extends javax.swing.JFrame implements StoreObserver {
     }//GEN-LAST:event_jButton8ActionPerformed
 
     private void jButton7ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton7ActionPerformed
-        NewJFrame11 admin = new NewJFrame11(user.getId());
+        NewJFrame11 admin = new NewJFrame11(userId);
         this.setVisible(false);
         admin.setVisible(true);
     }//GEN-LAST:event_jButton7ActionPerformed
@@ -852,7 +842,7 @@ public class NewJFrame1 extends javax.swing.JFrame implements StoreObserver {
         }
         boolean appointmentType = patientAppointmentTypeComboBox.getSelectedIndex() == 2;
         AppointmentController controller = new AppointmentController();
-        Response response = controller.requestAppointment(String.valueOf(patient.getId()), doctorId, specialty,
+        Response response = controller.requestAppointment(String.valueOf(patientId), doctorId, specialty,
                 patientAppointmentDateField.getText(), patientAppointmentTimeField.getText(), patientAppointmentReasonArea.getText(), appointmentType);
         JOptionPane.showMessageDialog(this, response.getMessage());
         if (response.isSuccess()) {
@@ -873,7 +863,7 @@ public class NewJFrame1 extends javax.swing.JFrame implements StoreObserver {
     private void jButton4ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton4ActionPerformed
         RoomType desireRoom = RoomType.valueOf(patientRoomTypeComboBox.getItemAt(patientRoomTypeComboBox.getSelectedIndex()).toUpperCase());
         HospitalizationController controller = new HospitalizationController();
-        Response response = controller.requestHospitalization(String.valueOf(patient.getId()), patientHospitalizationDoctorComboBox.getItemAt(patientHospitalizationDoctorComboBox.getSelectedIndex()), patientHospitalizationDateField.getText(),
+        Response response = controller.requestHospitalization(String.valueOf(patientId), patientHospitalizationDoctorComboBox.getItemAt(patientHospitalizationDoctorComboBox.getSelectedIndex()), patientHospitalizationDateField.getText(),
                 patientHospitalizationReasonArea.getText(), desireRoom, patientHospitalizationObservationsArea.getText());
         JOptionPane.showMessageDialog(this, response.getMessage());
         if (response.isSuccess()) {
@@ -884,19 +874,21 @@ public class NewJFrame1 extends javax.swing.JFrame implements StoreObserver {
     }//GEN-LAST:event_jButton4ActionPerformed
 
     private void loadPatientData() {
-        if (patient == null) {
+        Response response = new CatalogController().getUser(String.valueOf(patientId));
+        if (!response.isSuccess()) {
             return;
         }
-        patientFirstnameField.setText(patient.getFirstname());
-        patientLastnameField.setText(patient.getLastname());
-        patientBirthdateField.setText(patient.getBirthdate().toString());
-        patientGenderComboBox.setSelectedIndex(patient.isGender() ? 1 : 2);
-        patientEmailField.setText(patient.getEmail());
-        patientPhoneField.setText(String.valueOf(patient.getPhone()));
-        patientAddressField.setText(patient.getAddress());
-        patientUsernameField.setText(patient.getUsername());
-        patientPasswordField.setText(patient.getPassword());
-        patientPasswordConfirmationField.setText(patient.getPassword());
+        JSONObject patient = new JSONObject(response.getData());
+        patientFirstnameField.setText(patient.getString("firstname"));
+        patientLastnameField.setText(patient.getString("lastname"));
+        patientBirthdateField.setText(patient.getString("birthdate"));
+        patientGenderComboBox.setSelectedIndex(patient.getBoolean("gender") ? 1 : 2);
+        patientEmailField.setText(patient.getString("email"));
+        patientPhoneField.setText(String.valueOf(patient.getLong("phone")));
+        patientAddressField.setText(patient.getString("address"));
+        patientUsernameField.setText(patient.getString("username"));
+        patientPasswordField.setText("");
+        patientPasswordConfirmationField.setText("");
     }
 
     private void loadRequestCombos() {
@@ -931,7 +923,7 @@ public class NewJFrame1 extends javax.swing.JFrame implements StoreObserver {
     private void loadPatientAppointmentCombo() {
         patientCancelAppointmentComboBox.removeAllItems();
         patientCancelAppointmentComboBox.addItem("Select one");
-        Response response = new AppointmentController().getPatientAppointments(patient.getId());
+        Response response = new AppointmentController().getPatientAppointments(String.valueOf(patientId));
         JSONArray appointmentData = new JSONArray(response.getData());
         for (int i = 0; i < appointmentData.length(); i++) {
             JSONObject appointment = appointmentData.getJSONObject(i);
@@ -942,7 +934,7 @@ public class NewJFrame1 extends javax.swing.JFrame implements StoreObserver {
     }
 
     private void refreshAppointmentsTable() {
-        Response response = new AppointmentController().getPatientAppointments(patient.getId());
+        Response response = new AppointmentController().getPatientAppointments(String.valueOf(patientId));
         DefaultTableModel model = (DefaultTableModel) patientAppointmentsTable.getModel();
         model.setRowCount(0);
         JSONArray appointmentData = new JSONArray(response.getData());

@@ -21,6 +21,18 @@ public class CatalogController {
         return Response.ok("Pacientes cargados.", array.toString());
     }
 
+    public Response getUser(String id) {
+        try {
+            User user = store.findUserById(Long.parseLong(id));
+            if (user == null) {
+                return Response.error(StatusCode.NOT_FOUND, "Usuario no encontrado.");
+            }
+            return Response.ok("Usuario encontrado.", store.serializeUser(user).toString());
+        } catch (NumberFormatException ex) {
+            return Response.error(StatusCode.BAD_REQUEST, "El id debe ser numerico.");
+        }
+    }
+
     public Response getDoctors() {
         JSONArray array = new JSONArray();
         for (User user : store.getUsers()) {

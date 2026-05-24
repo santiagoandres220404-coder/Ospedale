@@ -5,8 +5,8 @@
 package packagee;
 
 import java.awt.Color;
-import java.util.ArrayList;
 import javax.swing.JOptionPane;
+import org.json.JSONObject;
 
 /**
  *
@@ -16,9 +16,6 @@ import javax.swing.JOptionPane;
 public class NewJFrame extends javax.swing.JFrame {
 
     private int x, y;
-    private ArrayList<User> users;
-    private ArrayList<Hospitalization> hospitalizations;
-    private ArrayList<Appointment> appointments;
 
     public NewJFrame() {
         initComponents();
@@ -27,9 +24,6 @@ public class NewJFrame extends javax.swing.JFrame {
 
         HospitalStore store = HospitalStore.getInstance();
         store.loadUsersFromJson();
-        this.users = store.getUsers();
-        this.appointments = store.getAppointments();
-        this.hospitalizations = store.getHospitalizations();
         configureComponentNames();
     }
 
@@ -421,17 +415,19 @@ public class NewJFrame extends javax.swing.JFrame {
         if (!response.isSuccess()) {
             return;
         }
-        User selectedUser = HospitalStore.getInstance().findUserByUsername(loginUsernameField.getText());
-        if (selectedUser instanceof Administrator ) {
-            NewJFrame11 admin = new NewJFrame11(selectedUser.getId());
+        JSONObject selectedUser = new JSONObject(response.getData());
+        long selectedUserId = selectedUser.getLong("id");
+        String type = selectedUser.getString("type");
+        if ("admin".equals(type)) {
+            NewJFrame11 admin = new NewJFrame11(selectedUserId);
             this.setVisible(false);
             admin.setVisible(true);
-        } else if (selectedUser instanceof Doctor ) {
-            NewJFrame111 doctor = new NewJFrame111(selectedUser.getId(), selectedUser.getId());
+        } else if ("doctor".equals(type)) {
+            NewJFrame111 doctor = new NewJFrame111(selectedUserId, selectedUserId);
             this.setVisible(false);
             doctor.setVisible(true);
         } else {
-            NewJFrame1 patient = new NewJFrame1(selectedUser.getId(), selectedUser.getId());
+            NewJFrame1 patient = new NewJFrame1(selectedUserId, selectedUserId);
             this.setVisible(false);
             patient.setVisible(true);
         }

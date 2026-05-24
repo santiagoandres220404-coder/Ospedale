@@ -5,7 +5,6 @@
 package packagee;
 
 import java.awt.Color;
-import java.util.ArrayList;
 import javax.swing.JOptionPane;
 
 /**
@@ -16,26 +15,16 @@ import javax.swing.JOptionPane;
 public class NewJFrame11 extends javax.swing.JFrame {
 
     private int x, y;
-    private ArrayList<User> users;
-    private ArrayList<Appointment>appointments;
-    private ArrayList<Hospitalization>hospitalizations;
-    private User user;
+    private long userId;
     public NewJFrame11(long userId) {
         initComponents();
         HospitalStore store = HospitalStore.getInstance();
         store.loadUsersFromJson();
-        this.user = store.findUserById(userId);
-        this.users = store.getUsers();
-        this.hospitalizations = store.getHospitalizations();
-        this.appointments = store.getAppointments();
+        this.userId = userId;
         loadUsersInCombos();
         configureComponentNames();
         this.setBackground(new Color(0, 0, 0, 0));
         this.setLocationRelativeTo(null);
-    }
-
-    public NewJFrame11(User user, ArrayList<User>users,ArrayList<Hospitalization> hospitalizations, ArrayList<Appointment> appointments) {
-        this(user.getId());
     }
 
     /**
@@ -452,12 +441,17 @@ public class NewJFrame11 extends javax.swing.JFrame {
 
     private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
         String idDoctor = adminDoctorSelectorComboBox.getItemAt(adminDoctorSelectorComboBox.getSelectedIndex());
-        Doctor temp = null;
-        for(User use:this.users){
-            if(String.valueOf(use.getId()).equals(idDoctor))
-                temp =(Doctor) use;
+        Response selectedDoctor = new CatalogController().getUser(idDoctor);
+        if (!selectedDoctor.isSuccess()) {
+            JOptionPane.showMessageDialog(this, "Debe seleccionar un doctor valido.");
+            return;
         }
-        NewJFrame111 doctor = new NewJFrame111(user.getId(), temp.getId());
+        org.json.JSONObject doctorData = new org.json.JSONObject(selectedDoctor.getData());
+        if (!"doctor".equals(doctorData.getString("type"))) {
+            JOptionPane.showMessageDialog(this, "Debe seleccionar un doctor valido.");
+            return;
+        }
+        NewJFrame111 doctor = new NewJFrame111(userId, doctorData.getLong("id"));
         this.setVisible(false);
         doctor.setVisible(true);
     }//GEN-LAST:event_jButton2ActionPerformed
@@ -471,12 +465,17 @@ public class NewJFrame11 extends javax.swing.JFrame {
 
     private void jButton3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton3ActionPerformed
         String idPatient = adminPatientSelectorComboBox.getItemAt(adminPatientSelectorComboBox.getSelectedIndex());
-        Patient temp = null;
-        for(User use:this.users){
-            if(String.valueOf(use.getId()).equals(idPatient))
-                temp =(Patient) use;
+        Response selectedPatient = new CatalogController().getUser(idPatient);
+        if (!selectedPatient.isSuccess()) {
+            JOptionPane.showMessageDialog(this, "Debe seleccionar un paciente valido.");
+            return;
         }
-        NewJFrame1 patient = new NewJFrame1(user.getId(), temp.getId());
+        org.json.JSONObject patientData = new org.json.JSONObject(selectedPatient.getData());
+        if (!"patient".equals(patientData.getString("type"))) {
+            JOptionPane.showMessageDialog(this, "Debe seleccionar un paciente valido.");
+            return;
+        }
+        NewJFrame1 patient = new NewJFrame1(userId, patientData.getLong("id"));
         this.setVisible(false);
         patient.setVisible(true);
     }//GEN-LAST:event_jButton3ActionPerformed
@@ -486,12 +485,13 @@ public class NewJFrame11 extends javax.swing.JFrame {
         adminPatientSelectorComboBox.removeAllItems();
         adminDoctorSelectorComboBox.addItem("Select one");
         adminPatientSelectorComboBox.addItem("Select one");
-        for (User current : users) {
-            if (current instanceof Doctor) {
-                adminDoctorSelectorComboBox.addItem(String.valueOf(current.getId()));
-            } else if (current instanceof Patient) {
-                adminPatientSelectorComboBox.addItem(String.valueOf(current.getId()));
-            }
+        org.json.JSONArray doctors = new org.json.JSONArray(new CatalogController().getDoctors().getData());
+        for (int i = 0; i < doctors.length(); i++) {
+            adminDoctorSelectorComboBox.addItem(String.valueOf(doctors.getJSONObject(i).getLong("id")));
+        }
+        org.json.JSONArray patients = new org.json.JSONArray(new CatalogController().getPatients().getData());
+        for (int i = 0; i < patients.length(); i++) {
+            adminPatientSelectorComboBox.addItem(String.valueOf(patients.getJSONObject(i).getLong("id")));
         }
     }
 

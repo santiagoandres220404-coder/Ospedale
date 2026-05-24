@@ -5,7 +5,6 @@
 package packagee;
 
 import java.awt.Color;
-import java.util.ArrayList;
 import javax.swing.JOptionPane;
 import javax.swing.table.DefaultTableModel;
 import org.json.JSONArray;
@@ -19,22 +18,17 @@ import org.json.JSONObject;
 public class NewJFrame111 extends javax.swing.JFrame implements StoreObserver {
 
     private int x, y;
-    private User user;
-    private ArrayList<User> users;
-    private ArrayList<Hospitalization>hospitalizations;
-    private ArrayList<Appointment>appointments;
-    private Doctor doctor;
-    private Patient patient;
+    private long userId;
+    private long doctorId;
+
     public NewJFrame111(long userId, long doctorId) {
         initComponents();
         HospitalStore store = HospitalStore.getInstance();
         store.loadUsersFromJson();
-        this.user = store.findUserById(userId);
-        this.users = store.getUsers();
-        this.doctor = store.findDoctor(doctorId);
-        this.hospitalizations = store.getHospitalizations();
-        this.appointments = store.getAppointments();
-        if (user instanceof Administrator)
+        this.userId = userId;
+        this.doctorId = doctorId;
+        JSONObject userData = new JSONObject(new CatalogController().getUser(String.valueOf(userId)).getData());
+        if ("admin".equals(userData.getString("type")))
             doctorBackButton.setVisible(true);
         else    
             doctorBackButton.setVisible(false);
@@ -45,10 +39,6 @@ public class NewJFrame111 extends javax.swing.JFrame implements StoreObserver {
         store.addObserver(this);
         this.setBackground(new Color(0, 0, 0, 0));
         this.setLocationRelativeTo(null);
-    }
-
-    public NewJFrame111(User user,Doctor doc, ArrayList<User> users,ArrayList<Hospitalization> hospitalizations,ArrayList<Appointment> appointments) {
-        this(user.getId(), doc.getId());
     }
 
     /**
@@ -1142,7 +1132,7 @@ public class NewJFrame111 extends javax.swing.JFrame implements StoreObserver {
         String password = doctorPasswordField.getText();
         String comPassword = doctorPasswordConfirmationField.getText();
         UserController controller = new UserController();
-        Response response = controller.updateDoctor(String.valueOf(doctor.getId()), username, firstname, lastname, password,
+        Response response = controller.updateDoctor(String.valueOf(doctorId), username, firstname, lastname, password,
                 comPassword, spec, licenseNumber, assignedOffice);
         JOptionPane.showMessageDialog(this, response.getMessage());
         if (response.isSuccess()) {
@@ -1157,7 +1147,7 @@ public class NewJFrame111 extends javax.swing.JFrame implements StoreObserver {
     }//GEN-LAST:event_jButton12ActionPerformed
 
     private void jButton11ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton11ActionPerformed
-        NewJFrame11 admin = new NewJFrame11(user.getId());
+        NewJFrame11 admin = new NewJFrame11(userId);
         this.setVisible(false);
         admin.setVisible(true);
     }//GEN-LAST:event_jButton11ActionPerformed
@@ -1177,7 +1167,7 @@ public class NewJFrame111 extends javax.swing.JFrame implements StoreObserver {
         if (doctorCreateHospitalizationRadioButton.isSelected()) {
             HospitalizationController controller = new HospitalizationController();
             Response response = controller.requestHospitalization(doctorHospitalizationPatientComboBox.getItemAt(doctorHospitalizationPatientComboBox.getSelectedIndex()),
-                    String.valueOf(doctor.getId()), doctorHospitalizationDateField.getText(), doctorHospitalizationObservationsArea.getText(), RoomType.IMC, doctorHospitalizationReasonArea.getText());
+                    String.valueOf(doctorId), doctorHospitalizationDateField.getText(), doctorHospitalizationObservationsArea.getText(), RoomType.IMC, doctorHospitalizationReasonArea.getText());
             if (response.isSuccess()) {
                 JSONObject hospitalization = new JSONObject(response.getData());
                 response = controller.approveHospitalization(hospitalization.getString("id"));
@@ -1279,17 +1269,19 @@ public class NewJFrame111 extends javax.swing.JFrame implements StoreObserver {
     }//GEN-LAST:event_jButton4ActionPerformed
 
     private void loadDoctorData() {
-        if (doctor == null) {
+        Response response = new CatalogController().getUser(String.valueOf(doctorId));
+        if (!response.isSuccess()) {
             return;
         }
-        doctorFirstnameField.setText(doctor.getFirstname());
-        doctorLastnameField.setText(doctor.getLastname());
-        doctorSpecialtyComboBox.setSelectedItem(HospitalStore.getInstance().displaySpecialty(doctor.getSpecialty()));
-        doctorLicenseField.setText(doctor.getLicenceNumber());
-        doctorOfficeField.setText(doctor.getAssignedOffice());
-        doctorUsernameField.setText(doctor.getUsername());
-        doctorPasswordField.setText(doctor.getPassword());
-        doctorPasswordConfirmationField.setText(doctor.getPassword());
+        JSONObject doctor = new JSONObject(response.getData());
+        doctorFirstnameField.setText(doctor.getString("firstname"));
+        doctorLastnameField.setText(doctor.getString("lastname"));
+        doctorSpecialtyComboBox.setSelectedItem(HospitalStore.getInstance().displaySpecialty(Specialty.valueOf(doctor.getString("specialty"))));
+        doctorLicenseField.setText(doctor.getString("licenceNumber"));
+        doctorOfficeField.setText(doctor.getString("assignedOffice"));
+        doctorUsernameField.setText(doctor.getString("username"));
+        doctorPasswordField.setText("");
+        doctorPasswordConfirmationField.setText("");
     }
 
     private void loadDoctorCombos() {
@@ -1318,7 +1310,7 @@ public class NewJFrame111 extends javax.swing.JFrame implements StoreObserver {
         doctorRescheduleAppointmentComboBox.addItem("Select one");
         doctorCompleteAppointmentComboBox.addItem("Select one");
         doctorPrescriptionAppointmentComboBox.addItem("Select one");
-        Response response = new AppointmentController().getDoctorAppointments(doctor.getId(), false);
+        Response response = new AppointmentController().getDoctorAppointments(doctorId, false);
         JSONArray appointmentData = new JSONArray(response.getData());
         for (int i = 0; i < appointmentData.length(); i++) {
             JSONObject appointment = appointmentData.getJSONObject(i);
@@ -1344,7 +1336,7 @@ public class NewJFrame111 extends javax.swing.JFrame implements StoreObserver {
         JSONArray hospitalizationData = new JSONArray(response.getData());
         for (int i = 0; i < hospitalizationData.length(); i++) {
             JSONObject hospitalization = hospitalizationData.getJSONObject(i);
-            if (hospitalization.getLong("doctorId") == doctor.getId()
+            if (hospitalization.getLong("doctorId") == doctorId
                     && "REQUESTED".equals(hospitalization.getString("status"))) {
                 doctorHospitalizationRequestComboBox.addItem(hospitalization.getString("id"));
             }
@@ -1352,7 +1344,7 @@ public class NewJFrame111 extends javax.swing.JFrame implements StoreObserver {
     }
 
     private void refreshDoctorAppointments(boolean onlyPending) {
-        Response response = new AppointmentController().getDoctorAppointments(doctor.getId(), onlyPending);
+        Response response = new AppointmentController().getDoctorAppointments(doctorId, onlyPending);
         DefaultTableModel model = (DefaultTableModel) doctorAppointmentsTable.getModel();
         model.setRowCount(0);
         JSONArray appointmentData = new JSONArray(response.getData());
