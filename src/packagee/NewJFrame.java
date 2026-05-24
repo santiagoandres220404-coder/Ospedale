@@ -30,6 +30,7 @@ public class NewJFrame extends javax.swing.JFrame {
         this.users = store.getUsers();
         this.appointments = store.getAppointments();
         this.hospitalizations = store.getHospitalizations();
+        configureComponentNames();
     }
 
     /**
@@ -439,11 +440,11 @@ public class NewJFrame extends javax.swing.JFrame {
     private void jButton9ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton9ActionPerformed
         String firstname = jTextField3.getText();
         String lastname = jTextField4.getText();
-        long id = Long.parseLong(jTextField5.getText());
+        String id = jTextField5.getText();
         boolean gender = jComboBox1.getSelectedIndex() == 1;
         String birth = jTextField12.getText();
         String address = jTextField11.getText();
-        long phone = Long.parseLong(jTextField6.getText());
+        String phone = jTextField6.getText();
         String email = jTextField7.getText();
         String user = jTextField8.getText();
         String password = jTextField9.getText();
@@ -468,8 +469,27 @@ public class NewJFrame extends javax.swing.JFrame {
     }//GEN-LAST:event_jButton9ActionPerformed
 
     private void jTextField10ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jTextField10ActionPerformed
-        // TODO add your handling code here:
     }//GEN-LAST:event_jTextField10ActionPerformed
+
+    private void configureComponentNames() {
+        jButton1.setName("loginCloseButton");
+        jButton2.setName("loginSubmitButton");
+        jButton9.setName("patientRegisterButton");
+        jComboBox1.setName("patientRegisterGenderComboBox");
+        jTextField1.setName("loginUsernameField");
+        jTextField2.setName("loginPasswordField");
+        jTextField3.setName("patientRegisterFirstnameField");
+        jTextField4.setName("patientRegisterLastnameField");
+        jTextField5.setName("patientRegisterIdField");
+        jTextField6.setName("patientRegisterPhoneField");
+        jTextField7.setName("patientRegisterEmailField");
+        jTextField8.setName("patientRegisterUsernameField");
+        jTextField9.setName("patientRegisterPasswordField");
+        jTextField10.setName("patientRegisterPasswordConfirmationField");
+        jTextField11.setName("patientRegisterAddressField");
+        jTextField12.setName("patientRegisterBirthdateField");
+        jTabbedPane1.setName("loginAndRegistrationTabs");
+    }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton jButton1;

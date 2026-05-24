@@ -38,6 +38,17 @@ public class AppointmentController {
         return Response.created("Cita solicitada.", store.serializeAppointment(appointment).toString());
     }
 
+    public Response requestAppointment(String patientId, String doctorId, String specialtyName, String date,
+            String time, String reason, boolean inPerson) {
+        try {
+            Long parsedDoctorId = doctorId == null || doctorId.length() == 0 ? null : Long.parseLong(doctorId);
+            Specialty specialty = specialtyName == null || specialtyName.length() == 0 ? null : Specialty.valueOf(specialtyName);
+            return requestAppointment(Long.parseLong(patientId), parsedDoctorId, specialty, date, time, reason, inPerson);
+        } catch (IllegalArgumentException ex) {
+            return Response.error(StatusCode.BAD_REQUEST, "Datos de cita invalidos.");
+        }
+    }
+
     public Response acceptAppointment(String appointmentId) {
         Appointment appointment = requireAppointment(appointmentId);
         if (appointment == null) {
@@ -106,6 +117,16 @@ public class AppointmentController {
         return Response.created("Medicamento prescrito.", store.serializeAppointment(appointment).toString());
     }
 
+    public Response prescribe(String appointmentId, String medicationName, String dose, String administrationRoute,
+            String treatmentDuration, String additionalInstructions, String frecuency) {
+        try {
+            return prescribe(appointmentId, medicationName, Double.parseDouble(dose), administrationRoute,
+                    Integer.parseInt(treatmentDuration), additionalInstructions, Integer.parseInt(frecuency));
+        } catch (NumberFormatException ex) {
+            return Response.error(StatusCode.BAD_REQUEST, "Dosis, duracion y frecuencia deben ser numericas.");
+        }
+    }
+
     public Response getPatientAppointments(long patientId) {
         JSONArray array = new JSONArray();
         for (Appointment appointment : sortedAppointments()) {
@@ -114,6 +135,14 @@ public class AppointmentController {
             }
         }
         return Response.ok("Citas del paciente.", array.toString());
+    }
+
+    public Response getPatientAppointments(String patientId) {
+        try {
+            return getPatientAppointments(Long.parseLong(patientId));
+        } catch (NumberFormatException ex) {
+            return Response.error(StatusCode.BAD_REQUEST, "El paciente debe ser numerico.");
+        }
     }
 
     public Response getDoctorAppointments(long doctorId, boolean onlyPending) {

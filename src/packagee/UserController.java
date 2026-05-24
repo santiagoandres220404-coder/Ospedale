@@ -31,6 +31,18 @@ public class UserController {
         return Response.created("Paciente registrado.", store.serializeUser(patient).toString());
     }
 
+    public Response registerPatient(String id, String username, String firstname, String lastname,
+            String password, String confirmation, String email, String birthdate, boolean gender,
+            String phone, String address) {
+        Long parsedId = parseLong(id, "El id debe ser numerico.");
+        Long parsedPhone = parseLong(phone, "El telefono debe ser numerico.");
+        if (parsedId == null || parsedPhone == null) {
+            return Response.error(StatusCode.BAD_REQUEST, parsedId == null ? "El id debe ser numerico." : "El telefono debe ser numerico.");
+        }
+        return registerPatient(parsedId, username, firstname, lastname, password, confirmation, email,
+                birthdate, gender, parsedPhone, address);
+    }
+
     public Response updatePatient(long id, String username, String firstname, String lastname,
             String password, String confirmation, String email, String birthdate, boolean gender,
             long phone, String address) {
@@ -54,6 +66,18 @@ public class UserController {
         return Response.ok("Paciente actualizado.", store.serializeUser(patient).toString());
     }
 
+    public Response updatePatient(String id, String username, String firstname, String lastname,
+            String password, String confirmation, String email, String birthdate, boolean gender,
+            String phone, String address) {
+        Long parsedId = parseLong(id, "El id debe ser numerico.");
+        Long parsedPhone = parseLong(phone, "El telefono debe ser numerico.");
+        if (parsedId == null || parsedPhone == null) {
+            return Response.error(StatusCode.BAD_REQUEST, parsedId == null ? "El id debe ser numerico." : "El telefono debe ser numerico.");
+        }
+        return updatePatient(parsedId, username, firstname, lastname, password, confirmation, email,
+                birthdate, gender, parsedPhone, address);
+    }
+
     public Response registerDoctor(long id, String username, String firstname, String lastname,
             String password, String confirmation, Specialty specialty, String licenceNumber,
             String assignedOffice) {
@@ -64,6 +88,17 @@ public class UserController {
         Doctor doctor = new Doctor(id, username, firstname, lastname, password, specialty, licenceNumber, assignedOffice);
         store.getUsers().add(doctor);
         return Response.created("Doctor registrado.", store.serializeUser(doctor).toString());
+    }
+
+    public Response registerDoctor(String id, String username, String firstname, String lastname,
+            String password, String confirmation, Specialty specialty, String licenceNumber,
+            String assignedOffice) {
+        Long parsedId = parseLong(id, "El id debe ser numerico.");
+        if (parsedId == null) {
+            return Response.error(StatusCode.BAD_REQUEST, "El id debe ser numerico.");
+        }
+        return registerDoctor(parsedId, username, firstname, lastname, password, confirmation, specialty,
+                licenceNumber, assignedOffice);
     }
 
     public Response updateDoctor(long id, String username, String firstname, String lastname,
@@ -136,5 +171,13 @@ public class UserController {
             return Response.error(StatusCode.CONFLICT, "Ya existe un usuario con ese nombre de usuario.");
         }
         return Response.ok("Validacion exitosa.", "{}");
+    }
+
+    private Long parseLong(String value, String message) {
+        try {
+            return Long.parseLong(value);
+        } catch (NumberFormatException ex) {
+            return null;
+        }
     }
 }

@@ -28,6 +28,16 @@ public class HospitalizationController {
         return Response.created("Hospitalizacion solicitada.", store.serializeHospitalization(hospitalization).toString());
     }
 
+    public Response requestHospitalization(String patientId, String doctorId, String date, String reason,
+            RoomType roomType, String observations) {
+        try {
+            return requestHospitalization(Long.parseLong(patientId), Long.parseLong(doctorId), date, reason,
+                    roomType, observations);
+        } catch (NumberFormatException ex) {
+            return Response.error(StatusCode.BAD_REQUEST, "Paciente y doctor deben ser numericos.");
+        }
+    }
+
     public Response approveHospitalization(String hospitalizationId) {
         Hospitalization hospitalization = requireHospitalization(hospitalizationId);
         if (hospitalization == null) {
@@ -44,6 +54,10 @@ public class HospitalizationController {
         }
         hospitalization.setStatus(HospitalizationStatus.CANCELED);
         return Response.ok("Hospitalizacion cancelada.", store.serializeHospitalization(hospitalization).toString());
+    }
+
+    public Response cancelHospitalization(String hospitalizationId) {
+        return denyHospitalization(hospitalizationId);
     }
 
     public Response sendToHospitalizationFromAppointment(String appointmentId, String date, String reason,
