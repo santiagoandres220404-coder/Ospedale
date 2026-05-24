@@ -35,6 +35,7 @@ public class AppointmentController {
         String id = nextAppointmentId(patientId);
         Appointment appointment = new Appointment(id, patient, doctor, doctor.getSpecialty(), datetime, reason, inPerson);
         store.getAppointments().add(appointment);
+        store.notifyObservers();
         return Response.created("Cita solicitada.", store.serializeAppointment(appointment).toString());
     }
 
@@ -42,7 +43,7 @@ public class AppointmentController {
             String time, String reason, boolean inPerson) {
         try {
             Long parsedDoctorId = doctorId == null || doctorId.length() == 0 ? null : Long.parseLong(doctorId);
-            Specialty specialty = specialtyName == null || specialtyName.length() == 0 ? null : Specialty.valueOf(specialtyName);
+            Specialty specialty = specialtyName == null || specialtyName.length() == 0 ? null : store.parseSpecialty(specialtyName);
             return requestAppointment(Long.parseLong(patientId), parsedDoctorId, specialty, date, time, reason, inPerson);
         } catch (IllegalArgumentException ex) {
             return Response.error(StatusCode.BAD_REQUEST, "Datos de cita invalidos.");
@@ -55,6 +56,7 @@ public class AppointmentController {
             return Response.error(StatusCode.NOT_FOUND, "Cita no encontrada.");
         }
         appointment.setStatus(AppointmentStatus.PENDING);
+        store.notifyObservers();
         return Response.ok("Cita aceptada.", store.serializeAppointment(appointment).toString());
     }
 
@@ -69,6 +71,7 @@ public class AppointmentController {
         appointment.setObservations(observations);
         appointment.setRecommendedTreatment(recommendedTreatment);
         appointment.setFollowUp(followUp);
+        store.notifyObservers();
         return Response.ok("Cita completada.", store.serializeAppointment(appointment).toString());
     }
 
@@ -81,6 +84,7 @@ public class AppointmentController {
             return Response.error(StatusCode.CONFLICT, "No se puede cancelar una cita completada.");
         }
         appointment.setStatus(AppointmentStatus.CANCELED);
+        store.notifyObservers();
         return Response.ok("Cita cancelada.", store.serializeAppointment(appointment).toString());
     }
 
@@ -99,6 +103,7 @@ public class AppointmentController {
         }
         appointment.setDatetime(datetime);
         appointment.appendReason(reason);
+        store.notifyObservers();
         return Response.ok("Cita reprogramada.", store.serializeAppointment(appointment).toString());
     }
 
@@ -114,6 +119,7 @@ public class AppointmentController {
         Prescription prescription = new Prescription(appointment, medicationName, dose, administrationRoute,
                 treatmentDuration, additionalInstructions, frecuency);
         appointment.addPrescription(prescription);
+        store.notifyObservers();
         return Response.created("Medicamento prescrito.", store.serializeAppointment(appointment).toString());
     }
 

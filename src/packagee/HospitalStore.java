@@ -14,12 +14,14 @@ public class HospitalStore {
     private final ArrayList<User> users;
     private final ArrayList<Appointment> appointments;
     private final ArrayList<Hospitalization> hospitalizations;
+    private final ArrayList<StoreObserver> observers;
     private boolean loaded;
 
     private HospitalStore() {
         users = new ArrayList<>();
         appointments = new ArrayList<>();
         hospitalizations = new ArrayList<>();
+        observers = new ArrayList<>();
     }
 
     public static HospitalStore getInstance() {
@@ -67,13 +69,41 @@ public class HospitalStore {
     }
 
     public Specialty parseSpecialty(String value) {
-        if ("ORTHOPEDICS".equals(value)) {
+        if (value == null) {
+            return null;
+        }
+        String normalized = value.trim().toUpperCase().replace(" & ", "_").replace(" ", "_");
+        if ("SELECT_ONE".equals(normalized)) {
+            return null;
+        }
+        if ("ORTHOPEDICS".equals(normalized)) {
             return Specialty.TRAUMATOLOGY_ORTHOPEDICS;
         }
-        if ("GYNECOLOGY".equals(value)) {
+        if ("GYNECOLOGY".equals(normalized)) {
             return Specialty.GYNECOLOGY_OBSTETRICS;
         }
-        return Specialty.valueOf(value);
+        return Specialty.valueOf(normalized);
+    }
+
+    public String displaySpecialty(Specialty specialty) {
+        if (specialty == Specialty.GENERAL_MEDICINE) {
+            return "General Medicine";
+        }
+        if (specialty == Specialty.TRAUMATOLOGY_ORTHOPEDICS) {
+            return "Traumatology & Orthopedics";
+        }
+        if (specialty == Specialty.GYNECOLOGY_OBSTETRICS) {
+            return "Gynecology & Obstetrics";
+        }
+        String[] parts = specialty.name().toLowerCase().split("_");
+        StringBuilder label = new StringBuilder();
+        for (String part : parts) {
+            if (label.length() > 0) {
+                label.append(" ");
+            }
+            label.append(Character.toUpperCase(part.charAt(0))).append(part.substring(1));
+        }
+        return label.toString();
     }
 
     public ArrayList<User> getUsers() {
@@ -86,6 +116,23 @@ public class HospitalStore {
 
     public ArrayList<Hospitalization> getHospitalizations() {
         return hospitalizations;
+    }
+
+    public void addObserver(StoreObserver observer) {
+        if (observer != null && !observers.contains(observer)) {
+            observers.add(observer);
+        }
+    }
+
+    public void removeObserver(StoreObserver observer) {
+        observers.remove(observer);
+    }
+
+    public void notifyObservers() {
+        ArrayList<StoreObserver> snapshot = new ArrayList<>(observers);
+        for (StoreObserver observer : snapshot) {
+            observer.onStoreChanged();
+        }
     }
 
     public User findUserByUsername(String username) {

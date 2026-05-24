@@ -20,16 +20,22 @@ public class NewJFrame11 extends javax.swing.JFrame {
     private ArrayList<Appointment>appointments;
     private ArrayList<Hospitalization>hospitalizations;
     private User user;
-    public NewJFrame11(User user, ArrayList<User>users,ArrayList<Hospitalization> hospitalizations, ArrayList<Appointment> appointments) {
+    public NewJFrame11(long userId) {
         initComponents();
-        this.user = user;
-        this.users = users;
-        this.hospitalizations = hospitalizations;
-        this.appointments = appointments;
+        HospitalStore store = HospitalStore.getInstance();
+        store.loadUsersFromJson();
+        this.user = store.findUserById(userId);
+        this.users = store.getUsers();
+        this.hospitalizations = store.getHospitalizations();
+        this.appointments = store.getAppointments();
         loadUsersInCombos();
         configureComponentNames();
         this.setBackground(new Color(0, 0, 0, 0));
         this.setLocationRelativeTo(null);
+    }
+
+    public NewJFrame11(User user, ArrayList<User>users,ArrayList<Hospitalization> hospitalizations, ArrayList<Appointment> appointments) {
+        this(user.getId());
     }
 
     /**
@@ -427,10 +433,9 @@ public class NewJFrame11 extends javax.swing.JFrame {
         String username = adminDoctorUsernameField.getText();
         String password = adminDoctorPasswordField.getText();
         String comPassword = adminDoctorPasswordConfirmationField.getText();
-        Specialty specialty = HospitalStore.getInstance().parseSpecialty(spec.replaceAll(" &", "").replaceAll(" ", "_").toUpperCase());
         UserController controller = new UserController();
         Response response = controller.registerDoctor(id, username, firstname, lastname, password, comPassword,
-                specialty, licenseNumber, assignedOffice);
+                spec, licenseNumber, assignedOffice);
         JOptionPane.showMessageDialog(this, response.getMessage());
         if (response.isSuccess()) {
             loadUsersInCombos();
@@ -452,7 +457,7 @@ public class NewJFrame11 extends javax.swing.JFrame {
             if(String.valueOf(use.getId()).equals(idDoctor))
                 temp =(Doctor) use;
         }
-        NewJFrame111 doctor = new NewJFrame111(user,temp, users, hospitalizations,appointments);
+        NewJFrame111 doctor = new NewJFrame111(user.getId(), temp.getId());
         this.setVisible(false);
         doctor.setVisible(true);
     }//GEN-LAST:event_jButton2ActionPerformed
@@ -471,7 +476,7 @@ public class NewJFrame11 extends javax.swing.JFrame {
             if(String.valueOf(use.getId()).equals(idPatient))
                 temp =(Patient) use;
         }
-        NewJFrame1 patient = new NewJFrame1(user,temp,users,appointments,hospitalizations);
+        NewJFrame1 patient = new NewJFrame1(user.getId(), temp.getId());
         this.setVisible(false);
         patient.setVisible(true);
     }//GEN-LAST:event_jButton3ActionPerformed

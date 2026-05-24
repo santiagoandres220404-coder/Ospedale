@@ -25,6 +25,7 @@ public class HospitalizationController {
         Hospitalization hospitalization = new Hospitalization(nextHospitalizationId(patientId), patient, doctor,
                 parsedDate, reason, roomType, observations);
         store.getHospitalizations().add(hospitalization);
+        store.notifyObservers();
         return Response.created("Hospitalizacion solicitada.", store.serializeHospitalization(hospitalization).toString());
     }
 
@@ -44,6 +45,7 @@ public class HospitalizationController {
             return Response.error(StatusCode.NOT_FOUND, "Hospitalizacion no encontrada.");
         }
         hospitalization.setStatus(HospitalizationStatus.ONGOING);
+        store.notifyObservers();
         return Response.ok("Hospitalizacion aprobada.", store.serializeHospitalization(hospitalization).toString());
     }
 
@@ -53,6 +55,7 @@ public class HospitalizationController {
             return Response.error(StatusCode.NOT_FOUND, "Hospitalizacion no encontrada.");
         }
         hospitalization.setStatus(HospitalizationStatus.CANCELED);
+        store.notifyObservers();
         return Response.ok("Hospitalizacion cancelada.", store.serializeHospitalization(hospitalization).toString());
     }
 
@@ -75,6 +78,7 @@ public class HospitalizationController {
                 appointment.getPatient(), appointment.getDoctor(), parsedDate, reason, roomType, observations,
                 HospitalizationStatus.ONGOING);
         store.getHospitalizations().add(hospitalization);
+        store.notifyObservers();
         return Response.created("Hospitalizacion creada desde cita.", store.serializeHospitalization(hospitalization).toString());
     }
 

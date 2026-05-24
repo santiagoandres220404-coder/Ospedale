@@ -28,6 +28,7 @@ public class UserController {
         Patient patient = new Patient(id, username, firstname, lastname, password, email,
                 LocalDate.parse(birthdate), gender, phone, address);
         store.getUsers().add(patient);
+        store.notifyObservers();
         return Response.created("Paciente registrado.", store.serializeUser(patient).toString());
     }
 
@@ -63,6 +64,7 @@ public class UserController {
         patient.setGender(gender);
         patient.setPhone(phone);
         patient.setAddress(address);
+        store.notifyObservers();
         return Response.ok("Paciente actualizado.", store.serializeUser(patient).toString());
     }
 
@@ -87,6 +89,7 @@ public class UserController {
         }
         Doctor doctor = new Doctor(id, username, firstname, lastname, password, specialty, licenceNumber, assignedOffice);
         store.getUsers().add(doctor);
+        store.notifyObservers();
         return Response.created("Doctor registrado.", store.serializeUser(doctor).toString());
     }
 
@@ -98,6 +101,17 @@ public class UserController {
             return Response.error(StatusCode.BAD_REQUEST, "El id debe ser numerico.");
         }
         return registerDoctor(parsedId, username, firstname, lastname, password, confirmation, specialty,
+                licenceNumber, assignedOffice);
+    }
+
+    public Response registerDoctor(String id, String username, String firstname, String lastname,
+            String password, String confirmation, String specialty, String licenceNumber,
+            String assignedOffice) {
+        Specialty parsedSpecialty = parseSpecialty(specialty);
+        if (parsedSpecialty == null) {
+            return Response.error(StatusCode.BAD_REQUEST, "Debe seleccionar una especialidad valida.");
+        }
+        return registerDoctor(id, username, firstname, lastname, password, confirmation, parsedSpecialty,
                 licenceNumber, assignedOffice);
     }
 
@@ -119,7 +133,23 @@ public class UserController {
         doctor.setSpecialty(specialty);
         doctor.setLicenceNumber(licenceNumber);
         doctor.setAssignedOffice(assignedOffice);
+        store.notifyObservers();
         return Response.ok("Doctor actualizado.", store.serializeUser(doctor).toString());
+    }
+
+    public Response updateDoctor(String id, String username, String firstname, String lastname,
+            String password, String confirmation, String specialty, String licenceNumber,
+            String assignedOffice) {
+        Long parsedId = parseLong(id, "El id debe ser numerico.");
+        Specialty parsedSpecialty = parseSpecialty(specialty);
+        if (parsedId == null) {
+            return Response.error(StatusCode.BAD_REQUEST, "El id debe ser numerico.");
+        }
+        if (parsedSpecialty == null) {
+            return Response.error(StatusCode.BAD_REQUEST, "Debe seleccionar una especialidad valida.");
+        }
+        return updateDoctor(parsedId, username, firstname, lastname, password, confirmation, parsedSpecialty,
+                licenceNumber, assignedOffice);
     }
 
     private Response validatePatient(long id, String username, String password, String confirmation,
@@ -177,6 +207,14 @@ public class UserController {
         try {
             return Long.parseLong(value);
         } catch (NumberFormatException ex) {
+            return null;
+        }
+    }
+
+    private Specialty parseSpecialty(String value) {
+        try {
+            return store.parseSpecialty(value);
+        } catch (IllegalArgumentException ex) {
             return null;
         }
     }

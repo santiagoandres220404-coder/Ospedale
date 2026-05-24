@@ -36,7 +36,7 @@ public class CatalogController {
         for (Specialty specialty : Specialty.values()) {
             JSONObject item = new JSONObject();
             item.put("name", specialty.name());
-            item.put("label", specialty.name().replace("_", " & "));
+            item.put("label", store.displaySpecialty(specialty));
             array.put(item);
         }
         return Response.ok("Especialidades cargadas.", array.toString());
