@@ -211,6 +211,7 @@ public class HospitalStore {
         JSONObject json = new JSONObject();
         json.put("id", appointment.getId());
         json.put("patientId", appointment.getPatient().getId());
+        json.put("patient", appointment.getPatient().getFirstname() + " " + appointment.getPatient().getLastname());
         json.put("doctorId", appointment.getDoctor().getId());
         json.put("doctor", appointment.getDoctor().getFirstname() + " " + appointment.getDoctor().getLastname());
         json.put("specialty", appointment.getSpecialty().name());

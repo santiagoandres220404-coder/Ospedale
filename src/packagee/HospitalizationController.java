@@ -70,6 +70,9 @@ public class HospitalizationController {
         if (appointment == null) {
             return Response.error(StatusCode.NOT_FOUND, "Cita no encontrada.");
         }
+        if (appointment.getStatus() != AppointmentStatus.PENDING) {
+            return Response.error(StatusCode.CONFLICT, "Solo se puede hospitalizar directamente desde citas aceptadas.");
+        }
         if (parsedDate == null) {
             return Response.error(StatusCode.BAD_REQUEST, "La fecha debe seguir el formato AAAA-MM-DD.");
         }

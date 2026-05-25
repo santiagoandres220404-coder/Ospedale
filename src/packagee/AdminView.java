@@ -12,11 +12,11 @@ import javax.swing.JOptionPane;
  * @author jjlora
  * @author edangulo
  */
-public class NewJFrame11 extends javax.swing.JFrame {
+public class AdminView extends javax.swing.JFrame {
 
     private int x, y;
     private long userId;
-    public NewJFrame11(long userId) {
+    public AdminView(long userId) {
         initComponents();
         HospitalStore store = HospitalStore.getInstance();
         store.loadUsersFromJson();
@@ -451,14 +451,14 @@ public class NewJFrame11 extends javax.swing.JFrame {
             JOptionPane.showMessageDialog(this, "Debe seleccionar un doctor valido.");
             return;
         }
-        NewJFrame111 doctor = new NewJFrame111(userId, doctorData.getLong("id"));
+        DoctorView doctor = new DoctorView(userId, doctorData.getLong("id"));
         this.setVisible(false);
         doctor.setVisible(true);
     }//GEN-LAST:event_jButton2ActionPerformed
 
     private void jButton10ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton10ActionPerformed
         
-        NewJFrame login = new NewJFrame();
+        LoginView login = new LoginView();
         this.setVisible(false);
         login.setVisible(true);
     }//GEN-LAST:event_jButton10ActionPerformed
@@ -475,7 +475,7 @@ public class NewJFrame11 extends javax.swing.JFrame {
             JOptionPane.showMessageDialog(this, "Debe seleccionar un paciente valido.");
             return;
         }
-        NewJFrame1 patient = new NewJFrame1(userId, patientData.getLong("id"));
+        PatientView patient = new PatientView(userId, patientData.getLong("id"));
         this.setVisible(false);
         patient.setVisible(true);
     }//GEN-LAST:event_jButton3ActionPerformed

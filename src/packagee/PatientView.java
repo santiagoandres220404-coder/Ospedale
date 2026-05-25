@@ -15,13 +15,13 @@ import org.json.JSONObject;
  * @author jjlora
  * @author edangulo
  */
-public class NewJFrame1 extends javax.swing.JFrame implements StoreObserver {
+public class PatientView extends javax.swing.JFrame implements StoreObserver {
 
     private int x, y;
     private long userId;
     private long patientId;
 
-    public NewJFrame1(long userId, long patientId) {
+    public PatientView(long userId, long patientId) {
         initComponents();
         HospitalStore store = HospitalStore.getInstance();
         store.loadUsersFromJson();
@@ -806,13 +806,13 @@ public class NewJFrame1 extends javax.swing.JFrame implements StoreObserver {
     }//GEN-LAST:event_jButton9ActionPerformed
 
     private void jButton8ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton8ActionPerformed
-        NewJFrame login = new NewJFrame();
+        LoginView login = new LoginView();
         this.setVisible(false);
         login.setVisible(true);
     }//GEN-LAST:event_jButton8ActionPerformed
 
     private void jButton7ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton7ActionPerformed
-        NewJFrame11 admin = new NewJFrame11(userId);
+        AdminView admin = new AdminView(userId);
         this.setVisible(false);
         admin.setVisible(true);
     }//GEN-LAST:event_jButton7ActionPerformed

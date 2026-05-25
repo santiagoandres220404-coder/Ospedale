@@ -13,11 +13,11 @@ import org.json.JSONObject;
  * @author jjlora
  * @author edangulo
  */
-public class NewJFrame extends javax.swing.JFrame {
+public class LoginView extends javax.swing.JFrame {
 
     private int x, y;
 
-    public NewJFrame() {
+    public LoginView() {
         initComponents();
         this.setBackground(new Color(0, 0, 0, 0));
         this.setLocationRelativeTo(null);
@@ -419,15 +419,15 @@ public class NewJFrame extends javax.swing.JFrame {
         long selectedUserId = selectedUser.getLong("id");
         String type = selectedUser.getString("type");
         if ("admin".equals(type)) {
-            NewJFrame11 admin = new NewJFrame11(selectedUserId);
+            AdminView admin = new AdminView(selectedUserId);
             this.setVisible(false);
             admin.setVisible(true);
         } else if ("doctor".equals(type)) {
-            NewJFrame111 doctor = new NewJFrame111(selectedUserId, selectedUserId);
+            DoctorView doctor = new DoctorView(selectedUserId, selectedUserId);
             this.setVisible(false);
             doctor.setVisible(true);
         } else {
-            NewJFrame1 patient = new NewJFrame1(selectedUserId, selectedUserId);
+            PatientView patient = new PatientView(selectedUserId, selectedUserId);
             this.setVisible(false);
             patient.setVisible(true);
         }

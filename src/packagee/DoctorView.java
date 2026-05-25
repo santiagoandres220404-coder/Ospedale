@@ -15,13 +15,13 @@ import org.json.JSONObject;
  * @author jjlora
  * @author edangulo
  */
-public class NewJFrame111 extends javax.swing.JFrame implements StoreObserver {
+public class DoctorView extends javax.swing.JFrame implements StoreObserver {
 
     private int x, y;
     private long userId;
     private long doctorId;
 
-    public NewJFrame111(long userId, long doctorId) {
+    public DoctorView(long userId, long doctorId) {
         initComponents();
         HospitalStore store = HospitalStore.getInstance();
         store.loadUsersFromJson();
@@ -1141,13 +1141,13 @@ public class NewJFrame111 extends javax.swing.JFrame implements StoreObserver {
     }//GEN-LAST:event_jButton9ActionPerformed
 
     private void jButton12ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton12ActionPerformed
-        NewJFrame login = new NewJFrame();
+        LoginView login = new LoginView();
         this.setVisible(false);
         login.setVisible(true);
     }//GEN-LAST:event_jButton12ActionPerformed
 
     private void jButton11ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton11ActionPerformed
-        NewJFrame11 admin = new NewJFrame11(userId);
+        AdminView admin = new AdminView(userId);
         this.setVisible(false);
         admin.setVisible(true);
     }//GEN-LAST:event_jButton11ActionPerformed
@@ -1166,15 +1166,24 @@ public class NewJFrame111 extends javax.swing.JFrame implements StoreObserver {
     private void jButton6ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton6ActionPerformed
         if (doctorCreateHospitalizationRadioButton.isSelected()) {
             HospitalizationController controller = new HospitalizationController();
-            Response response = controller.requestHospitalization(doctorHospitalizationPatientComboBox.getItemAt(doctorHospitalizationPatientComboBox.getSelectedIndex()),
-                    String.valueOf(doctorId), doctorHospitalizationDateField.getText(), doctorHospitalizationObservationsArea.getText(), RoomType.IMC, doctorHospitalizationReasonArea.getText());
-            if (response.isSuccess()) {
+            String appointmentId = doctorCompleteAppointmentComboBox.getItemAt(doctorCompleteAppointmentComboBox.getSelectedIndex());
+            Response response;
+            if (!"Select one".equals(appointmentId)) {
+                response = controller.sendToHospitalizationFromAppointment(appointmentId,
+                        doctorHospitalizationDateField.getText(), doctorHospitalizationObservationsArea.getText(),
+                        RoomType.IMC, doctorHospitalizationReasonArea.getText());
+            } else {
+                response = controller.requestHospitalization(doctorHospitalizationPatientComboBox.getItemAt(doctorHospitalizationPatientComboBox.getSelectedIndex()),
+                        String.valueOf(doctorId), doctorHospitalizationDateField.getText(), doctorHospitalizationObservationsArea.getText(), RoomType.IMC, doctorHospitalizationReasonArea.getText());
+            }
+            if (response.isSuccess() && "Select one".equals(appointmentId)) {
                 JSONObject hospitalization = new JSONObject(response.getData());
                 response = controller.approveHospitalization(hospitalization.getString("id"));
             }
             JOptionPane.showMessageDialog(this, response.getMessage());
             if (response.isSuccess()) {
                 doctorHospitalizationDateField.setText("");
+                doctorHospitalizationRoomField.setText("");
                 doctorHospitalizationObservationsArea.setText("");
                 doctorHospitalizationReasonArea.setText("");
                 loadDoctorCombos();
@@ -1351,7 +1360,7 @@ public class NewJFrame111 extends javax.swing.JFrame implements StoreObserver {
         for (int i = 0; i < appointmentData.length(); i++) {
             JSONObject appointment = appointmentData.getJSONObject(i);
             model.addRow(new Object[]{appointment.getString("id"), appointment.getString("datetime"),
-                appointment.getLong("patientId"), appointment.getString("specialty"),
+                appointment.getString("patient"), appointment.getString("specialty"),
                 appointment.getString("type"), appointment.getString("status")});
         }
     }

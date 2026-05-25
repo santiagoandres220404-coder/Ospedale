@@ -55,6 +55,9 @@ public class AppointmentController {
         if (appointment == null) {
             return Response.error(StatusCode.NOT_FOUND, "Cita no encontrada.");
         }
+        if (appointment.getStatus() != AppointmentStatus.REQUESTED) {
+            return Response.error(StatusCode.CONFLICT, "Solo se pueden aceptar citas solicitadas.");
+        }
         appointment.setStatus(AppointmentStatus.PENDING);
         store.notifyObservers();
         return Response.ok("Cita aceptada.", store.serializeAppointment(appointment).toString());
@@ -65,6 +68,9 @@ public class AppointmentController {
         Appointment appointment = requireAppointment(appointmentId);
         if (appointment == null) {
             return Response.error(StatusCode.NOT_FOUND, "Cita no encontrada.");
+        }
+        if (appointment.getStatus() != AppointmentStatus.PENDING) {
+            return Response.error(StatusCode.CONFLICT, "Solo se pueden completar citas aceptadas.");
         }
         appointment.setStatus(AppointmentStatus.COMPLETED);
         appointment.setDiagnosis(diagnosis);
