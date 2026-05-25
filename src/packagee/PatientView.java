@@ -861,10 +861,9 @@ public class PatientView extends javax.swing.JFrame implements StoreObserver {
     }//GEN-LAST:event_jButton6ActionPerformed
 
     private void jButton4ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton4ActionPerformed
-        RoomType desireRoom = RoomType.valueOf(patientRoomTypeComboBox.getItemAt(patientRoomTypeComboBox.getSelectedIndex()).toUpperCase());
         HospitalizationController controller = new HospitalizationController();
         Response response = controller.requestHospitalization(String.valueOf(patientId), patientHospitalizationDoctorComboBox.getItemAt(patientHospitalizationDoctorComboBox.getSelectedIndex()), patientHospitalizationDateField.getText(),
-                patientHospitalizationReasonArea.getText(), desireRoom, patientHospitalizationObservationsArea.getText());
+                patientHospitalizationReasonArea.getText(), patientRoomTypeComboBox.getItemAt(patientRoomTypeComboBox.getSelectedIndex()), patientHospitalizationObservationsArea.getText());
         JOptionPane.showMessageDialog(this, response.getMessage());
         if (response.isSuccess()) {
             patientHospitalizationDateField.setText("");

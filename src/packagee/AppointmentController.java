@@ -51,6 +51,9 @@ public class AppointmentController {
     }
 
     public Response acceptAppointment(String appointmentId) {
+        if (isBlankSelection(appointmentId)) {
+            return Response.error(StatusCode.BAD_REQUEST, "Debe seleccionar una cita valida.");
+        }
         Appointment appointment = requireAppointment(appointmentId);
         if (appointment == null) {
             return Response.error(StatusCode.NOT_FOUND, "Cita no encontrada.");
@@ -65,6 +68,9 @@ public class AppointmentController {
 
     public Response completeAppointment(String appointmentId, String diagnosis, String observations,
             String recommendedTreatment, String followUp) {
+        if (isBlankSelection(appointmentId)) {
+            return Response.error(StatusCode.BAD_REQUEST, "Debe seleccionar una cita valida.");
+        }
         Appointment appointment = requireAppointment(appointmentId);
         if (appointment == null) {
             return Response.error(StatusCode.NOT_FOUND, "Cita no encontrada.");
@@ -82,6 +88,9 @@ public class AppointmentController {
     }
 
     public Response cancelAppointment(String appointmentId) {
+        if (isBlankSelection(appointmentId)) {
+            return Response.error(StatusCode.BAD_REQUEST, "Debe seleccionar una cita valida.");
+        }
         Appointment appointment = requireAppointment(appointmentId);
         if (appointment == null) {
             return Response.error(StatusCode.NOT_FOUND, "Cita no encontrada.");
@@ -95,9 +104,16 @@ public class AppointmentController {
     }
 
     public Response rescheduleAppointment(String appointmentId, String time, String reason) {
+        if (isBlankSelection(appointmentId)) {
+            return Response.error(StatusCode.BAD_REQUEST, "Debe seleccionar una cita valida.");
+        }
         Appointment appointment = requireAppointment(appointmentId);
         if (appointment == null) {
             return Response.error(StatusCode.NOT_FOUND, "Cita no encontrada.");
+        }
+        if (appointment.getStatus() == AppointmentStatus.COMPLETED
+                || appointment.getStatus() == AppointmentStatus.CANCELED) {
+            return Response.error(StatusCode.CONFLICT, "No se puede reprogramar una cita completada o cancelada.");
         }
         LocalTime parsedTime = Validation.parseQuarterHour(time);
         if (parsedTime == null) {
@@ -115,6 +131,9 @@ public class AppointmentController {
 
     public Response prescribe(String appointmentId, String medicationName, double dose, String administrationRoute,
             int treatmentDuration, String additionalInstructions, int frecuency) {
+        if (isBlankSelection(appointmentId)) {
+            return Response.error(StatusCode.BAD_REQUEST, "Debe seleccionar una cita valida.");
+        }
         Appointment appointment = requireAppointment(appointmentId);
         if (appointment == null) {
             return Response.error(StatusCode.NOT_FOUND, "Cita no encontrada.");
@@ -180,6 +199,10 @@ public class AppointmentController {
 
     private Appointment requireAppointment(String appointmentId) {
         return store.findAppointment(appointmentId);
+    }
+
+    private boolean isBlankSelection(String value) {
+        return value == null || value.trim().length() == 0 || "Select one".equals(value);
     }
 
     private Doctor resolveAvailableDoctor(Long doctorId, Specialty specialty, LocalDateTime datetime) {

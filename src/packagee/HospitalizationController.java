@@ -31,6 +31,12 @@ public class HospitalizationController {
 
     public Response requestHospitalization(String patientId, String doctorId, String date, String reason,
             RoomType roomType, String observations) {
+        if (isBlankSelection(patientId) || isBlankSelection(doctorId)) {
+            return Response.error(StatusCode.BAD_REQUEST, "Debe seleccionar paciente y doctor validos.");
+        }
+        if (roomType == null) {
+            return Response.error(StatusCode.BAD_REQUEST, "Debe seleccionar un tipo de habitacion valido.");
+        }
         try {
             return requestHospitalization(Long.parseLong(patientId), Long.parseLong(doctorId), date, reason,
                     roomType, observations);
@@ -39,10 +45,29 @@ public class HospitalizationController {
         }
     }
 
+    public Response requestHospitalization(String patientId, String doctorId, String date, String reason,
+            String roomType, String observations) {
+        try {
+            if (isBlankSelection(roomType)) {
+                return Response.error(StatusCode.BAD_REQUEST, "Debe seleccionar un tipo de habitacion valido.");
+            }
+            return requestHospitalization(patientId, doctorId, date, reason,
+                    RoomType.valueOf(roomType.toUpperCase()), observations);
+        } catch (IllegalArgumentException ex) {
+            return Response.error(StatusCode.BAD_REQUEST, "Debe seleccionar un tipo de habitacion valido.");
+        }
+    }
+
     public Response approveHospitalization(String hospitalizationId) {
+        if (isBlankSelection(hospitalizationId)) {
+            return Response.error(StatusCode.BAD_REQUEST, "Debe seleccionar una hospitalizacion valida.");
+        }
         Hospitalization hospitalization = requireHospitalization(hospitalizationId);
         if (hospitalization == null) {
             return Response.error(StatusCode.NOT_FOUND, "Hospitalizacion no encontrada.");
+        }
+        if (hospitalization.getStatus() != HospitalizationStatus.REQUESTED) {
+            return Response.error(StatusCode.CONFLICT, "Solo se pueden aprobar hospitalizaciones solicitadas.");
         }
         hospitalization.setStatus(HospitalizationStatus.ONGOING);
         store.notifyObservers();
@@ -50,9 +75,15 @@ public class HospitalizationController {
     }
 
     public Response denyHospitalization(String hospitalizationId) {
+        if (isBlankSelection(hospitalizationId)) {
+            return Response.error(StatusCode.BAD_REQUEST, "Debe seleccionar una hospitalizacion valida.");
+        }
         Hospitalization hospitalization = requireHospitalization(hospitalizationId);
         if (hospitalization == null) {
             return Response.error(StatusCode.NOT_FOUND, "Hospitalizacion no encontrada.");
+        }
+        if (hospitalization.getStatus() != HospitalizationStatus.REQUESTED) {
+            return Response.error(StatusCode.CONFLICT, "Solo se pueden denegar solicitudes de hospitalizacion.");
         }
         hospitalization.setStatus(HospitalizationStatus.CANCELED);
         store.notifyObservers();
@@ -65,6 +96,9 @@ public class HospitalizationController {
 
     public Response sendToHospitalizationFromAppointment(String appointmentId, String date, String reason,
             RoomType roomType, String observations) {
+        if (isBlankSelection(appointmentId)) {
+            return Response.error(StatusCode.BAD_REQUEST, "Debe seleccionar una cita valida.");
+        }
         Appointment appointment = store.findAppointment(appointmentId);
         LocalDate parsedDate = Validation.parseDate(date);
         if (appointment == null) {
@@ -95,6 +129,10 @@ public class HospitalizationController {
 
     private Hospitalization requireHospitalization(String hospitalizationId) {
         return store.findHospitalization(hospitalizationId);
+    }
+
+    private boolean isBlankSelection(String value) {
+        return value == null || value.trim().length() == 0 || "Select one".equals(value);
     }
 
     private String nextHospitalizationId(long patientId) {
